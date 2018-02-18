@@ -4,7 +4,7 @@ The goal of this project is to write a prototype for API that could be used in p
 
 The API is based on 3D turtle graphics and allows to create a 3D mesh in a minimum number of lines of code.
 
-
+![Generated Spaceship](https://raw.githubusercontent.com/eobermuhlner/object-generator/master/docs/images/spaceship1.png "Generated Spaceship")
 
 ```kotlin
 class SpaceShipGenerator : TurtleModelGenerator {
@@ -17,8 +17,8 @@ class SpaceShipGenerator : TurtleModelGenerator {
         val topSide = 0
         val leftWingSide = 2
         val rightWingSide = cornerCount - 2
-        val leftFinSide = leftWingSide // 1
-        val rightFinSide = rightWingSide // cornerCount - 1
+        val leftFinSide = leftWingSide
+        val rightFinSide = rightWingSide
 
         val bodyRadius = 5f
 
@@ -31,10 +31,10 @@ class SpaceShipGenerator : TurtleModelGenerator {
         body.forward(10f)
 
         body.radius = bodyRadius
-        val cockpit = body.sides[topSide].turtle()
+        body.sides[topSide].material = green
         body.forward(5f)
-        generateCockpit(cockpit, random)
 
+        body.material = white
         val leftWing = body.sides[leftWingSide].turtle()
         val rightWing = body.sides[rightWingSide].turtle()
         body.forward(25f)
@@ -56,20 +56,6 @@ class SpaceShipGenerator : TurtleModelGenerator {
         body.close()
 
         return body.end()
-    }
-
-    private fun generateCockpit(cockpit: Turtle, random: Random) {
-        cockpit.material = green
-        cockpit.smooth = true
-        cockpit.forward(0f)
-
-        cockpit.radius *= 0.8f
-        cockpit.forward(0.3f)
-
-        cockpit.radius *= 0.5f
-        cockpit.forward(0.1f)
-
-        cockpit.close()
     }
 
     private fun generateWing(wing: Turtle, length: Float) {
