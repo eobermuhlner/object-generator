@@ -117,6 +117,11 @@ class Turtle(
         upDirection.rotate(forwardDirection, angle)
     }
 
+    fun moveForward(step: Float) {
+        val delta = Vector3(forwardDirection).scl(step)
+        center.add(delta)
+    }
+
     fun forward(step: Float) {
         val delta = Vector3(forwardDirection).scl(step)
         center.add(delta)
