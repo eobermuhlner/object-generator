@@ -11,6 +11,10 @@ class Random {
         return random.nextFloat() * (max-min) + min
     }
 
+    fun nextInt(bound: Int): Int {
+        return random.nextInt(bound)
+    }
+
     fun nextInt(min: Int, max: Int): Int {
         if (min == max) {
             return min

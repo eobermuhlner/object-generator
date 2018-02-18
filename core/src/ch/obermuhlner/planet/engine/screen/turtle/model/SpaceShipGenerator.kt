@@ -13,95 +13,75 @@ class SpaceShipGenerator : TurtleModelGenerator {
     private val green = Material(ColorAttribute.createDiffuse(Color.GREEN), ColorAttribute.createSpecular(Color.WHITE))
 
     override fun generate(body: Turtle, random: Random): Model {
-        val cornerCount = 7
+        val cornerCount = random.nextInt(2, 5) * 2 + 1
         val topSide = 0
         val leftWingSide = 2
         val rightWingSide = cornerCount - 2
-        val leftFinSide = leftWingSide // 1
-        val rightFinSide = rightWingSide // cornerCount - 1
+        val finsOnSameSideAsWings = random.nextBoolean(0.5f)
+        val leftFinSide = if (finsOnSameSideAsWings) leftWingSide else 1
+        val rightFinSide = if (finsOnSameSideAsWings) rightWingSide else cornerCount - 1
 
-        val bodyRadius = 5f
+        val wingLength = random.nextFloat(20f, 30f)
+        val wingAngle = random.nextFloat(-5f, -50f)
 
-        body.moveForward(-30f)
+        val sideFinLength = random.nextFloat(10f, 20f)
+        val sideFinAngle = random.nextFloat(-5f, -50f)
+
+        val topFinLength = random.nextFloat(10f, 20f)
+        val topFinAngle = random.nextFloat(-5f, -50f)
+
+        val bodyRadius = random.nextFloat(3f, 6f)
+        val bodyLength = random.nextFloat(20f, 40f)
+
+        body.moveForward(-bodyLength)
 
         body.startRegularPolygon(cornerCount, 0.00001f, white)
         body.forward(0f)
 
         body.radius = bodyRadius * 0.6f
-        body.forward(10f)
+        body.forward(bodyLength / 2)
 
         body.radius = bodyRadius
-        val cockpit = body.sides[topSide].turtle()
-        body.forward(5f)
-        generateCockpit(cockpit, random)
+        body.sides[topSide].material = green
+        body.forward(bodyLength / 5)
 
+        body.material = white
         val leftWing = body.sides[leftWingSide].turtle()
         val rightWing = body.sides[rightWingSide].turtle()
-        body.forward(25f)
-        generateWing(leftWing, 1f)
-        generateWing(rightWing, 1f)
+        body.forward(bodyLength)
+        generateWing(leftWing, wingAngle, wingLength)
+        generateWing(rightWing, wingAngle, wingLength)
 
         val tailFin = body.sides[topSide].turtle()
         val leftFin = body.sides[leftFinSide].turtle()
         val rightFin = body.sides[rightFinSide].turtle()
         body.radius = bodyRadius * 0.8f
-        body.forward(15f)
-        generateFin(tailFin, 1f)
-        generateFin(leftFin, 2f)
-        generateFin(rightFin, 2f)
+        body.forward(bodyLength / 2)
+        generateWing(tailFin, topFinAngle,topFinLength)
+        generateWing(leftFin, sideFinAngle, sideFinLength)
+        generateWing(rightFin, sideFinAngle, sideFinLength)
 
         body.radius = bodyRadius * 0.5f
-        body.forward(5f)
+        body.forward(bodyLength / 5)
 
         body.close()
 
         return body.end()
     }
 
-    private fun generateCockpit(cockpit: Turtle, random: Random) {
-        cockpit.material = green
-        cockpit.smooth = true
-        cockpit.forward(0f)
-
-        cockpit.radius *= 0.8f
-        cockpit.forward(0.3f)
-
-        cockpit.radius *= 0.5f
-        cockpit.forward(0.1f)
-
-        cockpit.close()
-    }
-
-    private fun generateWing(wing: Turtle, length: Float) {
+    private fun generateWing(wing: Turtle, angle: Float, length: Float) {
         wing.forward(0f)
         wing.radius {_, old -> old * 0.6f}
         wing.forward(0f)
 
-        wing.forwardDirection.rotate(wing.upDirection, -45f)
+        wing.forwardDirection.rotate(wing.upDirection, angle)
 
         wing.radius {_, old -> old * 0.4f}
-        wing.forward(25f * length)
+        wing.forward(0.9f * length)
 
         wing.radius {_, old -> old * 0.2f}
-        wing.forward(3f * length)
+        wing.forward(0.1f * length)
 
         wing.close()
-    }
-
-    private fun generateFin(fin: Turtle, length: Float) {
-        fin.forward(0f)
-        fin.radius { _, old -> old * 0.6f}
-        fin.forward(0f)
-
-        fin.forwardDirection.rotate(fin.upDirection, -45f)
-
-
-        fin.radius { _, old -> old * 0.4f}
-        fin.forward(5f * length)
-
-        fin.radius { _, old -> old * 0.2f}
-        fin.forward(1f * length)
-
-        fin.close()
     }
 }
