@@ -1,6 +1,5 @@
 package ch.obermuhlner.planet.engine.screen.turtle
 
-import ch.obermuhlner.planet.engine.construction.turtle.SideType
 import ch.obermuhlner.planet.engine.construction.turtle.Turtle
 import ch.obermuhlner.planet.engine.render.FrustumCullingModelBatch
 import ch.obermuhlner.planet.engine.render.UberShaderProvider

@@ -1,6 +1,5 @@
 package ch.obermuhlner.planet.engine.screen.turtle.model
 
-import ch.obermuhlner.planet.engine.construction.turtle.SideType
 import ch.obermuhlner.planet.engine.construction.turtle.Turtle
 import ch.obermuhlner.planet.engine.util.Random
 import com.badlogic.gdx.Gdx
@@ -27,14 +26,13 @@ class TestModelGenerator : TurtleModelGenerator {
         turtle.forward(2f)
 
         turtle.radius = 5f
-        turtle.sides[1].type = SideType.Turtle
-        val subTurtle = turtle.forward(10.0f)[0]
+        val subTurtle = turtle.sides[1].turtle()
+        turtle.forward(10.0f)
 
         subTurtle.forward(3f)
         subTurtle.radius = 0f
         subTurtle.forward(3f)
 
-        turtle.sides[1].type = SideType.Face
         turtle.rotate(10f)
         turtle.radius = 3f
         turtle.sides[0].material = green

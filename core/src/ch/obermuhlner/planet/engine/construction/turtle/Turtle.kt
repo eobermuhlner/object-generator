@@ -15,10 +15,10 @@ class Turtle(
         var center: Vector3 = Vector3(0f, 0f, 0f),
         var upDirection: Vector3 = Vector3.Z,
         var forwardDirection: Vector3 = Vector3.Y,
-        private val builder: TurtleModelBuilder = TurtleModelBuilder()) {
+        var builder: TurtleModelBuilder = TurtleModelBuilder()) {
 
     private var lastCornerPoints = listOf<MeshPartBuilder.VertexInfo>()
-    private var corners = mutableListOf<Corner>()
+    var corners = mutableListOf<Corner>()
     var sides = mutableListOf<Side>()
 
     fun regularPolygon(cornerCount: Int, radius: Float, material: Material) {
@@ -57,29 +57,17 @@ class Turtle(
         return MathUtils.atan2(Vector3(vector1).crs(vector2).dot(planeNormal), Vector3(vector1).dot(vector2)) * MathUtils.radiansToDegrees
     }
 
-    private fun debugPoint(pos: Vector3, color: Color = Color.RED, size: Float = 1f) {
-        builder.part(Material(ColorAttribute.createDiffuse(color))).box(pos.x, pos.y, pos.z, size, size, size)
-    }
-
-    private fun debugVector(pos: Vector3, vector: Vector3, color: Color = Color.BLUE) {
-        debugLine(pos, Vector3(pos).add(vector))
-    }
-
-    private fun debugLine(pos1: Vector3, pos2: Vector3, color: Color = Color.BLUE) {
-        builder.part(Material(ColorAttribute.createDiffuse(color)), GL20.GL_LINES).line(pos1, pos2)
-    }
-
     var radius: Float
         get() {
             return this.corners.map { it.radius }.max() ?: 0f
         }
         set(value) {
-            radius({_ -> value})
+            radius({_, _ -> value})
         }
 
-    fun radius(radiusFunc: (Int) -> Float) {
+    fun radius(radiusFunc: (Int, Float) -> Float) {
         for (index in corners.indices) {
-            corners[index].radius = radiusFunc(index)
+            corners[index].radius = radiusFunc(index, corners[index].radius)
         }
     }
 
@@ -88,12 +76,12 @@ class Turtle(
             return corners[0].angle
         }
         set(value) {
-            angle({_ -> value})
+            angle({_, _ -> value})
         }
 
-    fun angle(angleFunc: (Int) -> Float) {
+    fun angle(angleFunc: (Int, Float) -> Float) {
         for (index in corners.indices) {
-            corners[index].angle= angleFunc(index)
+            corners[index].angle = angleFunc(index, corners[index].angle)
         }
     }
 
@@ -102,12 +90,12 @@ class Turtle(
             return sides[0].material
         }
         set(value) {
-            material({_ -> value})
+            material({_, _ -> value})
         }
 
-    fun material(materialFunc: (Int) -> Material) {
+    fun material(materialFunc: (Int, Material) -> Material) {
         for (index in sides.indices) {
-            sides[index].material = materialFunc(index)
+            sides[index].material = materialFunc(index, sides[index].material)
         }
     }
 
@@ -116,12 +104,12 @@ class Turtle(
             return sides[0].smooth
         }
         set(value) {
-            smooth({_ -> value})
+            smooth({_, _ -> value})
         }
 
-    fun smooth(smoothFunc: (Int) -> Boolean) {
+    fun smooth(smoothFunc: (Int, Boolean) -> Boolean) {
         for (index in sides.indices) {
-            sides[index].smooth = smoothFunc(index)
+            sides[index].smooth = smoothFunc(index, sides[index].smooth)
         }
     }
 
@@ -129,9 +117,7 @@ class Turtle(
         upDirection.rotate(forwardDirection, angle)
     }
 
-    fun forward(step: Float): List<Turtle> {
-        val subTurtles = mutableListOf<Turtle>()
-
+    fun forward(step: Float) {
         val delta = Vector3(forwardDirection).scl(step)
         center.add(delta)
 
@@ -160,42 +146,41 @@ class Turtle(
                 val corner3 = cornerPoints[nextSideIndex]
                 val corner4 = cornerPoints[sideIndex]
 
-                when (side.type) {
-                    SideType.Nothing -> {}
-                    SideType.Turtle -> {
-                        val vectorU = Vector3(corner2.position).sub(corner1.position).scl(0.5f)
-                        val vectorV = Vector3(corner4.position).sub(corner1.position).scl(0.5f)
-                        val center = Vector3(corner1.position).add(vectorU).add(vectorV)
-                        val normal = Vector3(vectorU).crs(vectorV).nor()
-                        val subTurtle = Turtle(center, vectorU.nor(), normal, builder)
-                        subTurtle.polygon({_ -> side.material}, corner1.position, corner2.position, corner3.position, corner4.position)
-                        subTurtle.forward(0f)
-                        subTurtles.add(subTurtle)
-                    }
-                    SideType.Face -> {
-                        corner1.setUV(0f, 0f)
-                        corner2.setUV(0f, 1f)
-                        corner3.setUV(1f, 1f)
-                        corner4.setUV(1f, 0f)
+                val subTurtle = side.turtle
+                side.turtle = null
 
-                        if (side.smooth) {
-                            // TODO set normal
-                        } else {
-                            val u = Vector3(corner2.position).sub(corner1.position)
-                            val v = Vector3(corner4.position).sub(corner1.position)
-                            corner1.normal.set(u).crs(v).nor()
-                            corner2.normal.set(corner1.normal)
-                            corner3.normal.set(corner1.normal)
-                            corner4.normal.set(corner1.normal)
-                        }
-                        part.rect(corner1, corner2, corner3, corner4)
+                if (subTurtle != null) {
+                    val vectorU = Vector3(corner2.position).sub(corner1.position).scl(0.5f)
+                    val vectorV = Vector3(corner4.position).sub(corner1.position).scl(0.5f)
+                    val center = Vector3(corner1.position).add(vectorU).add(vectorV)
+                    val normal = Vector3(vectorU).crs(vectorV).nor()
+                    subTurtle.center = center
+                    subTurtle.upDirection = vectorU.nor()
+                    subTurtle.forwardDirection = normal
+                    subTurtle.builder = builder
+                    subTurtle.polygon({_ -> side.material}, corner1.position, corner2.position, corner3.position, corner4.position)
+                    subTurtle.forward(0f)
+                } else {
+                    corner1.setUV(0f, 0f)
+                    corner2.setUV(0f, 1f)
+                    corner3.setUV(1f, 1f)
+                    corner4.setUV(1f, 0f)
+
+                    if (side.smooth) {
+                        // TODO set normal
+                    } else {
+                        val u = Vector3(corner2.position).sub(corner1.position)
+                        val v = Vector3(corner4.position).sub(corner1.position)
+                        corner1.normal.set(u).crs(v).nor()
+                        corner2.normal.set(corner1.normal)
+                        corner3.normal.set(corner1.normal)
+                        corner4.normal.set(corner1.normal)
                     }
+                    part.rect(corner1, corner2, corner3, corner4)
                 }
             }
         }
         lastCornerPoints = cornerPoints
-
-        return subTurtles
     }
 
     fun close() {
@@ -219,6 +204,18 @@ class Turtle(
     fun end(): Model {
         return builder.modelBuilder.end()
     }
+
+    private fun debugPoint(pos: Vector3, color: Color = Color.RED, size: Float = 1f) {
+        builder.part(Material(ColorAttribute.createDiffuse(color))).box(pos.x, pos.y, pos.z, size, size, size)
+    }
+
+    private fun debugVector(pos: Vector3, vector: Vector3, color: Color = Color.BLUE) {
+        debugLine(pos, Vector3(pos).add(vector))
+    }
+
+    private fun debugLine(pos1: Vector3, pos2: Vector3, color: Color = Color.BLUE) {
+        builder.part(Material(ColorAttribute.createDiffuse(color)), GL20.GL_LINES).line(pos1, pos2)
+    }
 }
 
 class Corner(
@@ -228,7 +225,14 @@ class Corner(
 class Side(
         var material: Material,
         var smooth: Boolean = false,
-        var type: SideType = SideType.Face)
+        var turtle: Turtle? = null) {
+
+    fun turtle(): Turtle {
+        val t = Turtle()
+        turtle = t
+        return t
+    }
+}
 
 class TurtleModelBuilder(
         val modelBuilder: ModelBuilder = ModelBuilder(),
@@ -257,10 +261,4 @@ class TurtleModelBuilder(
         }
         return oldPart
     }
-}
-
-enum class SideType {
-    Nothing,
-    Face,
-    Turtle
 }
