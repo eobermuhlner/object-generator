@@ -21,15 +21,15 @@ class Turtle(
     var corners = mutableListOf<Corner>()
     var sides = mutableListOf<Side>()
 
-    fun regularPolygon(cornerCount: Int, radius: Float, material: Material) {
-        regularPolygon(cornerCount, {_ -> radius}, {_ -> material})
+    fun startRegularPolygon(cornerCount: Int, radius: Float, material: Material) {
+        startRegularPolygon(cornerCount, { _ -> radius}, { _ -> material})
     }
 
-    fun regularPolygon(cornerCount: Int, radiusFunc: (Int) -> Float, materialFunc: (Int) -> Material) {
-        polygon(cornerCount, {index -> 360f / cornerCount * index}, radiusFunc, materialFunc)
+    fun startRegularPolygon(cornerCount: Int, radiusFunc: (Int) -> Float, materialFunc: (Int) -> Material) {
+        startPolygon(cornerCount, { index -> 360f / cornerCount * index}, radiusFunc, materialFunc)
     }
 
-    fun polygon(cornerCount: Int, angleFunc: (Int) -> Float, radiusFunc: (Int) -> Float, materialFunc: (Int) -> Material) {
+    fun startPolygon(cornerCount: Int, angleFunc: (Int) -> Float, radiusFunc: (Int) -> Float, materialFunc: (Int) -> Material) {
         corners.clear()
         sides.clear()
 
@@ -39,7 +39,7 @@ class Turtle(
         }
     }
 
-    fun polygon(materialFunc: (Int) -> Material, vararg points: Vector3) {
+    fun startPolygon(materialFunc: (Int) -> Material, vararg points: Vector3) {
         corners.clear()
         sides.clear()
 
@@ -163,7 +163,7 @@ class Turtle(
                     subTurtle.upDirection = vectorU.nor()
                     subTurtle.forwardDirection = normal
                     subTurtle.builder = builder
-                    subTurtle.polygon({_ -> side.material}, corner1.position, corner2.position, corner3.position, corner4.position)
+                    subTurtle.startPolygon({ _ -> side.material}, corner1.position, corner2.position, corner3.position, corner4.position)
                     subTurtle.forward(0f)
                 } else {
                     corner1.setUV(0f, 0f)
@@ -201,7 +201,7 @@ class Turtle(
             3 -> part.triangle(lastCornerPoints[0], lastCornerPoints[1], lastCornerPoints[2])
             4 -> part.rect(lastCornerPoints[0], lastCornerPoints[1], lastCornerPoints[2], lastCornerPoints[3])
             else -> {
-                // FIXME add polygon
+                // FIXME add startPolygon
             }
         }
     }

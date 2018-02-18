@@ -24,7 +24,7 @@ class SpaceShipGenerator : TurtleModelGenerator {
 
         body.moveForward(-30f)
 
-        body.regularPolygon(cornerCount, 0.00001f, white)
+        body.startRegularPolygon(cornerCount, 0.00001f, white)
         body.forward(0f)
 
         body.radius = bodyRadius * 0.6f

@@ -19,7 +19,7 @@ class TestModelGenerator : TurtleModelGenerator {
         val green = Material(ColorAttribute.createDiffuse(Color.GREEN), ColorAttribute.createSpecular(Color.WHITE))
         val test = Material(TextureAttribute.createDiffuse(texture))
 
-        turtle.regularPolygon(4, 4.0f, white)
+        turtle.startRegularPolygon(4, 4.0f, white)
         turtle.smooth = false
         turtle.forward(0f)
 
