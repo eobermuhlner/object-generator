@@ -13,7 +13,7 @@ class SpaceShipGenerator : TurtleModelGenerator {
     private val green = Material(ColorAttribute.createDiffuse(Color.GREEN), ColorAttribute.createSpecular(Color.WHITE))
 
     override fun generate(body: Turtle, random: Random): Model {
-        val cornerCount = random.nextInt(2, 5) * 2 + 1
+        val cornerCount = random.nextInt(3, 5) * 2 + 1
         val topSide = 0
         val leftWingSide = 2
         val rightWingSide = cornerCount - 2
@@ -21,14 +21,17 @@ class SpaceShipGenerator : TurtleModelGenerator {
         val leftFinSide = if (finsOnSameSideAsWings) leftWingSide else 1
         val rightFinSide = if (finsOnSameSideAsWings) rightWingSide else cornerCount - 1
 
-        val wingLength = random.nextFloat(20f, 30f)
-        val wingAngle = random.nextFloat(-5f, -50f)
+        val wingLength = random.nextFloat(20f, 50f)
+        val wingFirstAngle = random.nextFloat(0f, -50f)
+        val wingSecondAngle = random.nextFloat(0f, -20f)
 
         val sideFinLength = random.nextFloat(10f, 20f)
-        val sideFinAngle = random.nextFloat(-5f, -50f)
+        val sideFinFirstAngle = random.nextFloat(0f, -50f)
+        val sideFinSecondAngle = random.nextFloat(0f, -20f)
 
         val topFinLength = random.nextFloat(10f, 20f)
-        val topFinAngle = random.nextFloat(-5f, -50f)
+        val topFinFirstAngle = random.nextFloat(0f, -50f)
+        val topFinSecondAngle = random.nextFloat(0f, -20f)
 
         val bodyRadius = random.nextFloat(3f, 6f)
         val bodyLength = random.nextFloat(20f, 40f)
@@ -49,17 +52,17 @@ class SpaceShipGenerator : TurtleModelGenerator {
         val leftWing = body.sides[leftWingSide].turtle()
         val rightWing = body.sides[rightWingSide].turtle()
         body.forward(bodyLength)
-        generateWing(leftWing, wingAngle, wingLength)
-        generateWing(rightWing, wingAngle, wingLength)
+        generateWing(leftWing, wingLength, wingFirstAngle, wingSecondAngle)
+        generateWing(rightWing, wingLength, wingFirstAngle, wingSecondAngle)
 
         val tailFin = body.sides[topSide].turtle()
         val leftFin = body.sides[leftFinSide].turtle()
         val rightFin = body.sides[rightFinSide].turtle()
         body.radius = bodyRadius * 0.8f
         body.forward(bodyLength / 2)
-        generateWing(tailFin, topFinAngle,topFinLength)
-        generateWing(leftFin, sideFinAngle, sideFinLength)
-        generateWing(rightFin, sideFinAngle, sideFinLength)
+        generateWing(tailFin, topFinLength, topFinFirstAngle, topFinSecondAngle)
+        generateWing(leftFin, sideFinLength, sideFinFirstAngle, sideFinSecondAngle)
+        generateWing(rightFin, sideFinLength, sideFinFirstAngle, sideFinSecondAngle)
 
         body.radius = bodyRadius * 0.5f
         body.forward(bodyLength / 5)
@@ -69,18 +72,20 @@ class SpaceShipGenerator : TurtleModelGenerator {
         return body.end()
     }
 
-    private fun generateWing(wing: Turtle, angle: Float, length: Float) {
+    private fun generateWing(wing: Turtle, length: Float, firstAngle: Float, secondAngle: Float) {
         wing.forward(0f)
         wing.radius {_, old -> old * 0.6f}
         wing.forward(0f)
 
-        wing.forwardDirection.rotate(wing.upDirection, angle)
+        wing.forwardDirection.rotate(wing.upDirection, firstAngle)
 
         wing.radius {_, old -> old * 0.4f}
-        wing.forward(0.9f * length)
+        wing.forward(0.6f * length)
+
+        wing.forwardDirection.rotate(wing.upDirection, secondAngle)
 
         wing.radius {_, old -> old * 0.2f}
-        wing.forward(0.1f * length)
+        wing.forward(0.4f * length)
 
         wing.close()
     }
