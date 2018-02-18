@@ -4,7 +4,7 @@ The goal of this project is to write a prototype for API that could be used in p
 
 The API is based on 3D turtle graphics and allows to create a 3D mesh in a minimum number of lines of code.
 
-
+![Generated Spaceship](https://raw.githubusercontent.com/eobermuhlner/object-generator/master/docs/images/spaceship1.png "Generated Spaceship")
 
 ```kotlin
 class SpaceShipGenerator : TurtleModelGenerator {
