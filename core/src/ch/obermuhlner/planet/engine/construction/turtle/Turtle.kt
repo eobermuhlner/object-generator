@@ -22,7 +22,6 @@ class Turtle(
     var corners = mutableListOf<Corner>()
     var sides = mutableListOf<Side>()
 
-    var uv = Vector2()
     var uvScale = Vector2(1.0f, 1.0f)
 
     val sideDirection: Vector3
@@ -134,10 +133,8 @@ class Turtle(
     fun forward(step: Float) {
         val delta = Vector3(forwardDirection).scl(step)
         center.add(delta)
-        uv.x = 0f
-        uv.y += step * uvScale.y
+        var u = 0f
 
-        // TODO handle smooth/edged corners
         var lastPosition: Vector3? = null
         val cornerPoints = mutableListOf<MeshPartBuilder.VertexInfo>()
         for (corner in corners) {
@@ -149,14 +146,25 @@ class Turtle(
             cornerPoint.position.scl(corner.radius).add(center)
 
             if (lastPosition != null) {
-                uv.x += Vector3(cornerPoint.position).sub(lastPosition).len() * uvScale.x
+                u += Vector3(cornerPoint.position).sub(lastPosition).len() * uvScale.x
             }
-            cornerPoint.setUV(uv)
+            cornerPoint.uv.x = u
+            cornerPoint.hasUV = true
 
             cornerPoints.add(cornerPoint)
 
             lastPosition = cornerPoint.position
         }
+
+        // add an extra cornerPoint (same position as cornerPoints[0] but different uv)
+        val cornerPoint = MeshPartBuilder.VertexInfo()
+        cornerPoint.set(cornerPoints[0])
+        if (lastPosition != null) {
+            u += Vector3(cornerPoint.position).sub(lastPosition).len() * uvScale.x
+        }
+        cornerPoint.uv.x = u
+        cornerPoint.hasUV = true
+        cornerPoints.add(cornerPoint)
 
         if (lastCornerPoints.size > 0) {
             // TODO handle cases where number of sides has changed
@@ -164,12 +172,15 @@ class Turtle(
                 val side = sides[sideIndex]
 
                 val part = builder.part(side.material)
-                val nextSideIndex = (sideIndex + 1) % sides.size
+                val nextSideIndex = sideIndex + 1
 
                 val corner1 = lastCornerPoints[sideIndex]
                 val corner2 = lastCornerPoints[nextSideIndex]
                 val corner3 = cornerPoints[nextSideIndex]
                 val corner4 = cornerPoints[sideIndex]
+
+                corner3.uv.y = corner2.uv.y + Vector3(corner3.position).sub(corner2.position).len() * uvScale.y
+                corner4.uv.y = corner1.uv.y + Vector3(corner4.position).sub(corner1.position).len() * uvScale.y
 
                 val subTurtle = side.turtle
                 side.turtle = null
@@ -185,11 +196,11 @@ class Turtle(
                     subTurtle.builder = builder
                     subTurtle.uvScale = uvScale
                     subTurtle.startPolygon({ _ -> side.material}, corner1.position, corner2.position, corner3.position, corner4.position)
+                    subTurtle.smooth = side.smooth
+                    // TODO if smooth, set normals from corners
                     subTurtle.forward(0f)
                 } else {
-                    if (side.smooth) {
-                        // TODO set normal
-                    } else {
+                    if (!side.smooth) {
                         val u = Vector3(corner2.position).sub(corner1.position)
                         val v = Vector3(corner4.position).sub(corner1.position)
                         corner1.normal.set(u).crs(v).nor()
