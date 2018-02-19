@@ -13,11 +13,14 @@ import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
 class TestModelGenerator : TurtleModelGenerator {
     override fun generate(turtle: Turtle, random: Random): Model {
         val texture = Texture(Gdx.files.internal("textures/test_diffuse.png").path())
+        texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
         val white = Material(ColorAttribute.createDiffuse(Color.WHITE), ColorAttribute.createSpecular(Color.WHITE))
         val red = Material(ColorAttribute.createDiffuse(Color.RED), ColorAttribute.createSpecular(Color.WHITE))
         val green = Material(ColorAttribute.createDiffuse(Color.GREEN), ColorAttribute.createSpecular(Color.WHITE))
         val test = Material(TextureAttribute.createDiffuse(texture))
+
+        turtle.uvScale.set(0.1f, 0.1f)
 
         turtle.startRegularPolygon(4, 4.0f, test)
         turtle.smooth = false
@@ -33,15 +36,15 @@ class TestModelGenerator : TurtleModelGenerator {
         subTurtle.radius = 0f
         subTurtle.forward(3f)
 
-        turtle.rotate(10f)
+        //turtle.rotate(10f)
         turtle.radius = 3f
         turtle.forward(10.0f)
 
         turtle.forwardDirection.rotate(turtle.upDirection, 90f)
-        turtle.forward(2f)
+        turtle.forward(5f)
 
         turtle.forwardDirection.rotate(turtle.sideDirection, 45f)
-        turtle.forward(2f)
+        turtle.forward(5f)
 
         turtle.radius = 1f
         turtle.forward(0.0f)

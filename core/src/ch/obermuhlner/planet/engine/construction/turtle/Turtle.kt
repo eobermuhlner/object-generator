@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.MathUtils
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 
 class Turtle(
@@ -20,6 +21,9 @@ class Turtle(
     private var lastCornerPoints = listOf<MeshPartBuilder.VertexInfo>()
     var corners = mutableListOf<Corner>()
     var sides = mutableListOf<Side>()
+
+    var uv = Vector2()
+    var uvScale = Vector2(1.0f, 1.0f)
 
     val sideDirection: Vector3
         get() {
@@ -130,8 +134,11 @@ class Turtle(
     fun forward(step: Float) {
         val delta = Vector3(forwardDirection).scl(step)
         center.add(delta)
+        uv.x = 0f
+        uv.y += step * uvScale.y
 
         // TODO handle smooth/edged corners
+        var lastPosition: Vector3? = null
         val cornerPoints = mutableListOf<MeshPartBuilder.VertexInfo>()
         for (corner in corners) {
             val cornerPoint = MeshPartBuilder.VertexInfo()
@@ -140,7 +147,15 @@ class Turtle(
             cornerPoint.position.set(upDirection).rotate(forwardDirection, corner.angle)
             cornerPoint.normal.set(cornerPoint.position).nor()
             cornerPoint.position.scl(corner.radius).add(center)
+
+            if (lastPosition != null) {
+                uv.x += Vector3(cornerPoint.position).sub(lastPosition).len() * uvScale.x
+            }
+            cornerPoint.setUV(uv)
+
             cornerPoints.add(cornerPoint)
+
+            lastPosition = cornerPoint.position
         }
 
         if (lastCornerPoints.size > 0) {
@@ -168,14 +183,10 @@ class Turtle(
                     subTurtle.upDirection = vectorU.nor()
                     subTurtle.forwardDirection = normal
                     subTurtle.builder = builder
+                    subTurtle.uvScale = uvScale
                     subTurtle.startPolygon({ _ -> side.material}, corner1.position, corner2.position, corner3.position, corner4.position)
                     subTurtle.forward(0f)
                 } else {
-                    corner1.setUV(0f, 0f)
-                    corner2.setUV(0f, 1f)
-                    corner3.setUV(1f, 1f)
-                    corner4.setUV(1f, 0f)
-
                     if (side.smooth) {
                         // TODO set normal
                     } else {
