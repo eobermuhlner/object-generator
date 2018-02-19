@@ -4,6 +4,8 @@ import ch.obermuhlner.planet.engine.construction.turtle.Turtle
 import ch.obermuhlner.planet.engine.render.FrustumCullingModelBatch
 import ch.obermuhlner.planet.engine.render.UberShaderProvider
 import ch.obermuhlner.planet.engine.screen.turtle.model.SpaceShipGenerator
+import ch.obermuhlner.planet.engine.screen.turtle.model.TestModelGenerator
+import ch.obermuhlner.planet.engine.screen.turtle.model.TurtleModelGenerator
 import ch.obermuhlner.planet.engine.util.Random
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputMultiplexer
@@ -20,6 +22,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
 import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.ui.Cell
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import ktx.app.KtxScreen
 import ktx.app.use
@@ -51,6 +54,8 @@ class TurtleScreen : KtxScreen {
 
     val modelInstances = mutableListOf<ModelInstance>()
 
+    var modelGenerator: TurtleModelGenerator = SpaceShipGenerator()
+
     init {
         Gdx.input.inputProcessor = InputMultiplexer(stage, controller)
         prepareStage()
@@ -76,6 +81,10 @@ class TurtleScreen : KtxScreen {
         Scene2DSkin.defaultSkin = skin
 
         val root = table {
+            selectBox<String, Cell<*>> {
+                -"Spaceship"
+                -"Test"
+            }.onChangeEvent { _, actor -> pickModelGenerator(actor.selected); createContent() }
             button {
                 label("Random")
             }.onClick { createContent() }
@@ -89,10 +98,16 @@ class TurtleScreen : KtxScreen {
         createContent()
     }
 
+    fun pickModelGenerator(name: String) {
+        when (name) {
+            "Spaceship" -> modelGenerator = SpaceShipGenerator()
+            "Test" -> modelGenerator = TestModelGenerator()
+        }
+    }
+
     fun createContent() {
-        val generator = SpaceShipGenerator()
         modelInstances.clear()
-        modelInstances.add(ModelInstance(generator.generate(Turtle(), Random())))
+        modelInstances.add(ModelInstance(modelGenerator.generate(Turtle(), Random())))
     }
 
     override fun resize(width: Int, height: Int) {
