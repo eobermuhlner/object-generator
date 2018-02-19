@@ -21,6 +21,15 @@ class Turtle(
     var corners = mutableListOf<Corner>()
     var sides = mutableListOf<Side>()
 
+    val sideDirection: Vector3
+        get() {
+            return Vector3(forwardDirection).crs(upDirection).nor()
+        }
+
+    private fun angleBetween(vector1: Vector3, vector2: Vector3, planeNormal: Vector3): Float {
+        return MathUtils.atan2(Vector3(vector1).crs(vector2).dot(planeNormal), Vector3(vector1).dot(vector2)) * MathUtils.radiansToDegrees
+    }
+
     fun startRegularPolygon(cornerCount: Int, radius: Float, material: Material) {
         startRegularPolygon(cornerCount, { _ -> radius}, { _ -> material})
     }
@@ -51,10 +60,6 @@ class Turtle(
             corners.add(Corner(distance, angle))
             sides.add(Side(materialFunc(pointIndex)))
         }
-    }
-
-    private fun angleBetween(vector1: Vector3, vector2: Vector3, planeNormal: Vector3): Float {
-        return MathUtils.atan2(Vector3(vector1).crs(vector2).dot(planeNormal), Vector3(vector1).dot(vector2)) * MathUtils.radiansToDegrees
     }
 
     var radius: Float
