@@ -1,8 +1,9 @@
 package ch.obermuhlner.planet.engine.screen.turtle
 
-import ch.obermuhlner.planet.engine.construction.turtle.Turtle
+import ch.obermuhlner.obj3d.turtle.Turtle
 import ch.obermuhlner.planet.engine.render.FrustumCullingModelBatch
 import ch.obermuhlner.planet.engine.render.UberShaderProvider
+import ch.obermuhlner.planet.engine.screen.turtle.model.SimpleSpaceShipGenerator
 import ch.obermuhlner.planet.engine.screen.turtle.model.SpaceShipGenerator
 import ch.obermuhlner.planet.engine.screen.turtle.model.TestModelGenerator
 import ch.obermuhlner.planet.engine.screen.turtle.model.TurtleModelGenerator
@@ -83,6 +84,7 @@ class TurtleScreen : KtxScreen {
         val root = table {
             selectBox<String, Cell<*>> {
                 -"Spaceship"
+                -"Simple Spaceship"
                 -"Test"
             }.onChangeEvent { _, actor -> pickModelGenerator(actor.selected); createContent() }
             button {
@@ -101,6 +103,7 @@ class TurtleScreen : KtxScreen {
     fun pickModelGenerator(name: String) {
         when (name) {
             "Spaceship" -> modelGenerator = SpaceShipGenerator()
+            "Simple Spaceship" -> modelGenerator = SimpleSpaceShipGenerator()
             "Test" -> modelGenerator = TestModelGenerator()
         }
     }

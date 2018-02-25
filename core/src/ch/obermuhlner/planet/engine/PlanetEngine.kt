@@ -11,8 +11,8 @@ import ktx.app.KtxGame
  */
 class PlanetEngine : KtxGame<Screen>() {
     override fun create() {
-        addScreen(WelcomeScreen())
-        addScreen(BuildingScreen())
+        //addScreen(WelcomeScreen())
+        //addScreen(BuildingScreen())
         addScreen(TurtleScreen())
 
         //setScreen<BuildingScreen>()

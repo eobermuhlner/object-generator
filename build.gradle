@@ -129,6 +129,8 @@ project(":core") {
         compile "io.github.libktx:ktx-assets:$ktxVersion"
         compile "io.github.libktx:ktx-scene2d:$ktxVersion"
         compile "io.github.libktx:ktx-actors:$ktxVersion"
+
+        compile project(":kotlin-obj3d")
     }
 }
 
