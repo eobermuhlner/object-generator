@@ -52,7 +52,7 @@ class TurtleScreen : KtxScreen {
 
     val modelInstances = mutableListOf<ModelInstance>()
 
-    var modelGenerator: TurtleModelGenerator = SpaceShipGenerator()
+    var modelGenerator: TurtleModelGenerator = RandomSpaceShipGenerator()
 
     init {
         Gdx.input.inputProcessor = InputMultiplexer(stage, controller)
@@ -100,8 +100,8 @@ class TurtleScreen : KtxScreen {
 
     fun pickModelGenerator(name: String) {
         when (name) {
-            "Random Spaceship" -> modelGenerator = SpaceShipGenerator()
-            "Spaceship" -> modelGenerator = SimpleSpaceShipGenerator()
+            "Random Spaceship" -> modelGenerator = RandomSpaceShipGenerator()
+            "Spaceship" -> modelGenerator = SpaceShipGenerator()
             "Spacestation" -> modelGenerator = SpaceStationGenerator()
             "1est" -> modelGenerator = TestModelGenerator()
         }
