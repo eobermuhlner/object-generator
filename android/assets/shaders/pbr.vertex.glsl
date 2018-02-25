@@ -1,4 +1,6 @@
-#if defined(diffuseTextureFlag) || defined(specularTextureFlag) || defined(ambientTextureFlag) || defined(normalTextureFlag) || defined(emissiveTextureFlag)
+#define pbrFlag
+
+#if defined(diffuseTextureFlag) || defined(specularTextureFlag) || defined(normalTextureFlag) || defined(emissiveTextureFlag)
 #define textureFlag
 #endif
 
@@ -10,12 +12,9 @@
 #define cameraPositionFlag
 #endif
 
-#ifdef normalTextureFlag
-//#define normalFlag
-//#define tangentFlag
-//#define binormalFlag
+#if defined(normalTextureFlag) || (defined(pbrFlag) && defined(specularTextureFlag))
 #define fragmentLightingFlag
-#endif // normalTextureFlag
+#endif
 
 
 attribute vec3 a_position;
@@ -59,13 +58,10 @@ varying vec2 v_emissiveUV;
 #ifdef specularTextureFlag
 uniform vec4 u_specularUVTransform;
 varying vec2 v_specularUV;
-#endif
-
-#ifdef ambientTextureFlag
-uniform vec4 u_ambientUVTransform;
-varying vec2 v_ambientUV;
+#ifdef pbrFlag
 #define separateAmbientFlag
-#endif // ambientTextureFlag
+#endif // pbrFlag
+#endif
 
 #ifdef normalTextureFlag
 uniform vec4 u_normalUVTransform;
@@ -80,6 +76,10 @@ varying vec2 v_normalUV;
     varying vec3 v_binormal;
     #endif // ! binormalFlag
 #endif // normalTextureFlag
+
+#ifdef specularColorFlag
+uniform vec4 u_specularColor;
+#endif
 
 #ifdef fragmentLightingFlag
  	vec3 biggestAngle(const in vec3 base, const in vec3 v1, const in vec3 v2) {
@@ -160,7 +160,11 @@ uniform mat4 u_bones[numBones];
 #ifdef shininessFlag
 uniform float u_shininess;
 #else
+#ifdef pbrFlag
+const float u_shininess = 0.2;
+#else
 const float u_shininess = 20.0;
+#endif
 #endif // shininessFlag
 
 #ifdef blendedFlag
@@ -198,6 +202,7 @@ varying float v_fog;
         #ifdef sphericalHarmonicsFlag
         uniform vec3 u_sphericalHarmonics[9];
         #endif //sphericalHarmonicsFlag
+
 
         #ifdef specularFlag
         varying vec3 v_lightSpecular;
@@ -250,10 +255,6 @@ void main() {
 	#ifdef specularTextureFlag
 		v_specularUV = u_specularUVTransform.xy + a_texCoord0 * u_specularUVTransform.zw;
 	#endif //specularTextureFlag
-
-	#ifdef ambientTextureFlag
-		v_ambientUV = u_ambientUVTransform.xy + a_texCoord0 * u_ambientUVTransform.zw;
-	#endif //ambientTextureFlag
 
     #ifdef normalTextureFlag
         v_normalUV = u_normalUVTransform.xy + a_texCoord0 * u_normalUVTransform.zw;
@@ -393,6 +394,18 @@ void main() {
 
 
             #ifdef specularFlag
+                #ifdef pbrFlag
+                    #if defined(specularColorFlag)
+                        vec3 mga = u_specularColor.rgb;
+                    #else
+                        vec3 mga = vec3(0.0, u_shininess, 1.0);
+                    #endif
+
+                    float metal = mga.r;
+                    float gloss = mga.g;
+                    float ao = mga.b;
+                #endif // pbrFlag
+
                 v_lightSpecular = vec3(0.0);
                 vec3 viewVec = normalize(u_cameraPosition.xyz - pos.xyz);
             #endif // specularFlag
@@ -402,10 +415,15 @@ void main() {
                     vec3 lightDir = -u_dirLights[i].direction;
                     float NdotL = clamp(dot(normal, lightDir), 0.0, 1.0);
                     vec3 value = u_dirLights[i].color * NdotL;
-                    v_lightDiffuse += value;
                     #ifdef specularFlag
                         float halfDotView = max(0.0, dot(normal, normalize(lightDir + viewVec)));
-                        v_lightSpecular += value * pow(halfDotView, u_shininess);
+                        #ifdef pbrFlag
+                            v_lightDiffuse += value * (1.0 - metal);
+                            v_lightSpecular += value * pow(halfDotView, gloss) * metal;
+                        #else // ! pbrFlag
+                            v_lightDiffuse += value;
+                            v_lightSpecular += value * pow(halfDotView, u_shininess);
+                        #endif // ! pbrFlag
                     #endif // specularFlag
                 }
             #endif // numDirectionalLights
@@ -420,7 +438,13 @@ void main() {
                     v_lightDiffuse += value;
                     #ifdef specularFlag
                         float halfDotView = max(0.0, dot(normal, normalize(lightDir + viewVec)));
-                        v_lightSpecular += value * pow(halfDotView, u_shininess);
+                        #ifdef pbrFlag
+                            v_lightDiffuse += value * (1.0 - metal);
+                            v_lightSpecular += value * pow(halfDotView, gloss) * metal;
+                        #else // ! pbrFlag
+                            v_lightDiffuse += value;
+                            v_lightSpecular += value * pow(halfDotView, u_shininess);
+                        #endif // ! pbrFlag
                     #endif // specularFlag
                 }
             #endif // numPointLights
